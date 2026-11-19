@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>技术编辑选题推荐系统</title>
+<title>技术编辑工作台：选题推荐与机构简称核查</title>
 <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 <header class="topbar">
-  <h1>技术编辑选题推荐系统</h1>
+  <h1>技术编辑工作台</h1>
   <div class="meta">
-    <span>字符 2~3 元 TF-IDF（仅文章拟合）· 余弦相关度 · 全局最优队列</span>
+    <nav class="tabs" id="view-tabs">
+      <button class="tab active" data-view="recommend">阅读推荐</button>
+      <button class="tab" data-view="abbr">机构简称核查</button>
+    </nav>
     <button id="btn-reset" class="btn btn-ghost">重置演示</button>
   </div>
 </header>
 
-<main class="layout">
+<!-- ================= 视图一：阅读推荐（原有功能完整保留） ================= -->
+<main class="layout" id="view-recommend">
   <!-- 左栏：条件控制 -->
   <section class="panel">
     <h2>1. 兴趣与主题配额</h2>
@@ -62,6 +66,59 @@
   </section>
 </main>
 
+<!-- ================= 视图二：机构简称核查（新增） ================= -->
+<main class="layout abbr-layout" id="view-abbr" hidden>
+  <!-- 左栏：输入 -->
+  <section class="panel">
+    <h2>1. 稿件与机构名称</h2>
+    <label class="field-label" for="abbr-manuscript">
+      稿件正文（300～1200 字）
+      <span id="abbr-length" class="length-hint">0 字</span>
+    </label>
+    <textarea id="abbr-manuscript" rows="14" placeholder="粘贴待核查稿件……"></textarea>
+
+    <label class="field-label" for="abbr-full">机构全称（2～5 个，每行一个，均须在稿中出现）</label>
+    <textarea id="abbr-full" rows="5" placeholder="国家发展和改革委员会&#10;国家卫生健康委员会"></textarea>
+
+    <label class="field-label" for="abbr-short">机构简称（数量与全称相同，每行一个，均须在稿中出现）</label>
+    <textarea id="abbr-short" rows="5" placeholder="国家发展改革委&#10;国家卫健委"></textarea>
+
+    <label class="field-label" for="abbr-delay">模拟慢核查延迟（毫秒，用于演示过期保护）</label>
+    <input id="abbr-delay" type="number" min="0" max="30000" step="500" value="0" />
+
+    <div class="btn-row">
+      <button id="btn-abbr-check" class="btn btn-primary">开始核查</button>
+      <button id="btn-abbr-sample" class="btn">填入示例稿件</button>
+      <button id="btn-abbr-clear" class="btn">清空</button>
+    </div>
+    <div id="abbr-msg" class="msg"></div>
+    <p class="hint-text">
+      改稿或改名称后旧判断立即撤下；核查仅使用本稿中名称周围的语境拟合
+      字符 2～3 元 TF-IDF，不引用任何外部语料。
+    </p>
+  </section>
+
+  <!-- 右栏：结果 -->
+  <section class="panel abbr-result-panel">
+    <h2>2. 核查结论（简称 → 全称，一对一）</h2>
+    <div id="abbr-job-status" class="job-status">尚未核查</div>
+    <div id="abbr-warnings" class="abbr-warnings"></div>
+    <div id="abbr-pairs" class="abbr-pairs"></div>
+
+    <h2 style="margin-top:20px">3. 原文位置标注</h2>
+    <div class="legend">
+      <span class="lg lg-full">全称</span>
+      <span class="lg lg-abbr">简称（独立出现）</span>
+      <span class="lg lg-embed">简称嵌在全称内（不重复计数）</span>
+    </div>
+    <div id="abbr-article" class="abbr-article">核查结果将在这里标出每处原文位置。</div>
+    <details class="context-details">
+      <summary>查看各名称的拟合语境与算法阈值（判断依据）</summary>
+      <div id="abbr-context" class="abbr-context"></div>
+    </details>
+  </section>
+</main>
+
 <dialog id="article-dialog">
   <article>
     <h3 id="dlg-title"></h3>
@@ -72,5 +129,6 @@
 </dialog>
 
 <script src="/static/app.js"></script>
+<script src="/static/abbr.js"></script>
 </body>
 </html>

@@ -93,3 +93,74 @@ dialog::backdrop { background: rgba(15,39,66,.45); }
 dialog article { padding: 22px; }
 .dlg-meta { font-size: 12px; color: #64748b; margin: 8px 0 14px; }
 #dlg-body { line-height: 1.8; font-size: 14px; white-space: pre-wrap; }
+
+/* ---------------- 顶部标签页 ---------------- */
+.tabs { display: inline-flex; gap: 4px; background: #1e3a5f; border-radius: 8px; padding: 3px; }
+.tab {
+  border: none; background: transparent; color: #b8c7dc; padding: 6px 16px;
+  border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit;
+}
+.tab.active { background: #2563eb; color: #fff; font-weight: 600; }
+
+/* ---------------- 机构简称核查视图 ---------------- */
+.abbr-layout { grid-template-columns: 420px 1fr; }
+@media (max-width: 1200px) { .abbr-layout { grid-template-columns: 1fr; } }
+.length-hint { font-size: 12px; margin-left: 8px; color: #64748b; }
+.length-hint.ok { color: #16a34a; }
+.length-hint.bad { color: #dc2626; }
+.hint-text { font-size: 12px; color: #64748b; line-height: 1.7; margin-top: 12px; }
+.abbr-result-panel { min-height: 600px; }
+.job-status.stale { background: #e2e8f0; color: #475569; }
+.abbr-warnings { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.abbr-warning {
+  font-size: 12px; background: #fffbeb; border: 1px solid #fde68a;
+  color: #92400e; border-radius: 6px; padding: 6px 10px;
+}
+.abbr-pairs { display: flex; flex-direction: column; gap: 10px; }
+.pair-card {
+  border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; background: #f8fafc;
+}
+.pair-card.confirmed { border-left: 4px solid #16a34a; }
+.pair-card.review { border-left: 4px solid #d97706; background: #fffbeb; }
+.pair-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pair-names { font-size: 14px; }
+.pair-names .arrow { color: #94a3b8; margin: 0 6px; }
+.name-abbr { color: #1d4ed8; }
+.name-full { color: #0f2742; }
+.status-pill {
+  font-size: 12px; border-radius: 999px; padding: 2px 12px; white-space: nowrap;
+}
+.status-pill.confirmed { background: #dcfce7; color: #166534; }
+.status-pill.review { background: #fef3c7; color: #92400e; }
+.pair-scores { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: #475569; margin: 8px 0 4px; }
+.pair-scores b { color: #0f2742; }
+.pair-runner { font-size: 12px; color: #64748b; }
+.reason-list { margin: 8px 0 0; padding-left: 18px; font-size: 12px; color: #92400e; }
+.reason-list li { margin-bottom: 2px; }
+.reason-ok { margin-top: 8px; font-size: 12px; color: #166534; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; font-size: 12px; }
+.lg { border-radius: 4px; padding: 1px 8px; }
+.lg-full { background: #dbeafe; color: #1e40af; }
+.lg-abbr { background: #dcfce7; color: #166534; }
+.lg-embed { background: #f3e8ff; color: #6b21a8; }
+.abbr-article {
+  border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;
+  line-height: 2.1; font-size: 14px; max-height: 420px; overflow-y: auto;
+  background: #fff; white-space: pre-wrap;
+}
+.abbr-article mark { border-radius: 3px; padding: 0 2px; }
+.mk-full { background: #dbeafe; color: #1e40af; }
+.mk-abbr { background: #dcfce7; color: #166534; }
+.mk-embed {
+  background: #f3e8ff; color: #6b21a8; text-decoration: underline dotted #a855f7;
+}
+.context-details { margin-top: 14px; font-size: 12px; }
+.context-details summary { cursor: pointer; color: #2563eb; }
+.abbr-context { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.threshold-meta {
+  background: #f1f5f9; border-radius: 6px; padding: 8px 10px;
+  color: #475569; line-height: 1.7;
+}
+.context-block { border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; }
+.context-name { font-weight: 600; color: #0f2742; margin-bottom: 4px; }
+.context-doc { color: #475569; line-height: 1.7; word-break: break-all; }

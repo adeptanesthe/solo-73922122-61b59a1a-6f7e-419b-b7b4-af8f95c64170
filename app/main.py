@@ -12,6 +12,15 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import database
+from .abbr_checker import (
+    MAX_MANUSCRIPT,
+    MAX_NAMES,
+    MIN_MANUSCRIPT,
+    MIN_NAMES,
+    AbbrValidationError,
+    validate_inputs,
+)
+from .abbr_jobs import get_registry
 from .articles_data import ARTICLES, TOPICS
 from .tfidf_model import get_model
 from .worker import get_worker
@@ -32,6 +41,21 @@ class ConditionIn(BaseModel):
 class ExclusionIn(BaseModel):
     article_id: int = Field(ge=1)
     compute_delay_ms: int = Field(default=0, ge=0, le=30000)
+
+
+class AbbrCheckIn(BaseModel):
+    manuscript: str = Field(description=f"稿件正文，{MIN_MANUSCRIPT}~{MAX_MANUSCRIPT} 字")
+    full_names: list[str] = Field(
+        description=f"机构全称，{MIN_NAMES}~{MAX_NAMES} 个，每个都须在稿中出现"
+    )
+    abbreviations: list[str] = Field(
+        description="机构简称，数量与全称相同，每个都须在稿中出现"
+    )
+    compute_delay_ms: int = Field(default=0, ge=0, le=30000)
+    client_token: int | None = Field(
+        default=None, ge=1,
+        description="前端本地世代，原样回显，用于丢弃迟到响应"
+    )
 
 def _validate_quotas(quotas: dict[str, int]) -> None:
     unknown = set(quotas) - set(TOPICS)
@@ -81,10 +105,12 @@ async def lifespan(app: FastAPI):
     except Exception:  # pragma: no cover
         log.exception("TF-IDF 预热失败")
     get_worker().start()
+    get_registry().start()
     try:
         yield
     finally:
         get_worker().stop()
+        get_registry().stop()
 
 
 app = FastAPI(title="技术编辑选题推荐系统", version="1.0.0", lifespan=lifespan)
@@ -168,6 +194,45 @@ def reveal() -> dict:
     payload = _status_payload()
     payload["reveal_outcome"] = outcome
     return payload
+
+
+# ---------------- 机构简称核查 ----------------
+
+
+@app.post("/api/abbr/check")
+def abbr_check(body: AbbrCheckIn) -> dict:
+    """提交一次简称核查：同步校验输入，异步执行 TF-IDF + 字形核查。
+
+    每次提交都生成新的 request_id（世代），未完成的旧任务立即 stale，
+    迟到结果不会覆盖新输入对应的判断。
+    """
+    try:
+        validate_inputs(body.manuscript, body.full_names, body.abbreviations)
+    except AbbrValidationError as exc:
+        raise HTTPException(422, str(exc))
+    job = get_registry().submit(
+        body.manuscript,
+        body.full_names,
+        body.abbreviations,
+        body.compute_delay_ms,
+        client_token=body.client_token,
+    )
+    return {"job": job}
+
+
+@app.get("/api/abbr/jobs/{request_id}")
+def abbr_job(request_id: int) -> dict:
+    """查询某次核查任务；若已被更新的提交取代，状态为 stale。"""
+    job = get_registry().snapshot(request_id)
+    if job is None:
+        raise HTTPException(404, "核查任务不存在或已被清理")
+    return {"job": job}
+
+
+@app.get("/api/abbr/latest")
+def abbr_latest() -> dict:
+    """最近一次核查任务（可能仍在计算或已过期）。"""
+    return {"job": get_registry().latest()}
 
 
 @app.post("/api/reset")
